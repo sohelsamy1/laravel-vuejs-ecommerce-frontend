@@ -85,13 +85,13 @@ http://localhost:5173
 Backend (Laravel) is maintained in a separate repository
 This frontend is fully API-driven
 Designed with scalability and maintainability in mind
-```
-👤 Author
 
-Sohel Samy
-GitHub: https://github.com/sohelsamy1
-LinkedIn: https://linkedin.com/in/sohelsamy
+## 👤 Author
+
+- **Sohel Samy**  
+- GitHub: https://github.com/sohelsamy1
+- LinkedIn: https://linkedin.com/in/sohelsamy
+
 
 ⭐ If you like this project, feel free to star the repository.
 
-```
