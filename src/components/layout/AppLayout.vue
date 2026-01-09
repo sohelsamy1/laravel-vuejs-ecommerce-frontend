@@ -3,7 +3,7 @@
 </script>
 
 <template>
- <RouterView />
+   <slot />
 </template>
 
 <style scoped>
