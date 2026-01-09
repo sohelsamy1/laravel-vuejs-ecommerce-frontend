@@ -41,15 +41,16 @@ This project focuses on clean UI structure, performance, and scalability for rea
 
 ---
 
+```text
 src/
-├── assets/ # Static assets
-├── components/ # Reusable components
-├── pages/ # Page-level views
-├── router/ # Route definitions
-├── stores/ # Pinia state stores
-├── App.vue # Root component
-└── main.js # Application entry point
-
+ ├── assets/        # Static assets
+ ├── components/    # Reusable components
+ ├── pages/         # Page-level views
+ ├── router/        # Route definitions
+ ├── stores/        # Pinia state stores
+ ├── App.vue        # Root component
+ └── main.js        # Application entry point
+```
 
 ---
 
