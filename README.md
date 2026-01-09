@@ -85,9 +85,7 @@ http://localhost:5173
 📌 Notes
 
 Backend (Laravel) is maintained in a separate repository
-
 This frontend is fully API-driven
-
 Designed with scalability and maintainability in mind
 
 👤 Author
@@ -98,5 +96,5 @@ GitHub: https://github.com/sohelsamy1
 
 LinkedIn: https://linkedin.com/in/sohelsamy
 
-## 📁 Project Structure (Key Parts)
+⭐ If you like this project, feel free to star the repository.
 
