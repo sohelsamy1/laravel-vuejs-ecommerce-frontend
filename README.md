@@ -38,9 +38,7 @@ This project focuses on clean UI structure, performance, and scalability for rea
 - npm
 - Git & GitHub
 - REST API integration
-
 ---
-
 ```text
 src/
  ├── assets/        # Static assets
@@ -51,7 +49,6 @@ src/
  ├── App.vue        # Root component
  └── main.js        # Application entry point
 ```
-
 ---
 
 ## 🔗 API Integration
@@ -88,14 +85,13 @@ http://localhost:5173
 Backend (Laravel) is maintained in a separate repository
 This frontend is fully API-driven
 Designed with scalability and maintainability in mind
-
+```
 👤 Author
 
 Sohel Samy
-
 GitHub: https://github.com/sohelsamy1
-
 LinkedIn: https://linkedin.com/in/sohelsamy
 
 ⭐ If you like this project, feel free to star the repository.
 
+```
