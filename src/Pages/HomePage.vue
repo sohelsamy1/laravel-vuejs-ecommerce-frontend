@@ -1,11 +1,14 @@
 <script setup>
+import HeroSlider from "../components/frontend/HeroSlider.vue";
+import TopCategories from "../components/frontend/TopCategories.vue";
 import AppLayout from "../components/Layout/AppLayout.vue";
-import MenuBar from "../components/frontend/MenuBar.vue";
+
 </script>
 
 <template>
  <AppLayout> 
-    <MenuBar />
+  <HeroSlider />
+  <TopCategories />
  </AppLayout>
 </template>
 

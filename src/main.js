@@ -3,6 +3,7 @@ import "./style.css";
 import App from "./App.vue";
 import router from "./router";
 import { createPinia } from "pinia";
+import "bootstrap";
 
 // Loading CSS files
 import "./assets/bootstrap/css/bootstrap.min.css";
