@@ -1,23 +1,57 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8000",
+  // ✅ Use env if available, fallback to localhost
+  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
+
+  withCredentials: true, // ✅ JWT cookie support (important)
+
   headers: {
+    Accept: "application/json",
     "Content-Type": "application/json",
   },
-//   withCredentials: true,
+
+  timeout: 15000, // ✅ avoid hanging requests
 });
 
-apiClient.interceptors.request.use((config) => {
-  // We are not using token based authentication in this project
-  // const token = localStorage.getItem("token");
+// ===============================
+// ✅ Request Interceptor
+// ===============================
+apiClient.interceptors.request.use(
+  (config) => {
+    // 🔹 If later you move JWT to header, enable this
+    // const token = localStorage.getItem("token");
+    // if (token) {
+    //   config.headers.Authorization = `Bearer ${token}`;
+    // }
 
-  // if (token) {
-  // For Laravel Sanctum authentication
-  //   config.headers.Authorization = `Bearer ${token}`;
-  // }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-  return config;
-});
+// ===============================
+// ✅ Response Interceptor
+// ===============================
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Network / CORS / server down
+    if (!error.response) {
+      console.error("Network error or server not responding");
+      return Promise.reject(error);
+    }
+
+    // Unauthorized (token expired etc.)
+    if (error.response.status === 401) {
+      console.warn("Unauthorized request");
+      // optional: auto logout or redirect
+      // localStorage.removeItem("email");
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;
+

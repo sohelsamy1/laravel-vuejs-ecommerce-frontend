@@ -1,22 +1,22 @@
 <script setup>
-// import { computed, onMounted, ref } from "vue";
-// import { useAuthStore } from "../../stores/authStore";
-// import { useProductStore } from "../../stores/productStore";
+import { computed, onMounted, ref } from "vue";
+import { useAuthStore } from "../../stores/authStore";
+import { useProductStore } from "../../stores/productStore";
 
-// const authStore = useAuthStore();
-// const productStore = useProductStore();
+const authStore = useAuthStore();
+const productStore = useProductStore();
 
-// const isLoggedIn = computed(() => authStore.isAuthenticated);
-// const categories = ref([]);
+const isLoggedIn = computed(() => authStore.isAuthenticated);
+const categories = ref([]);
 
-// const handleLogout = async () => {
-//   await authStore.logout();
-// };
+const handleLogout = async () => {
+  await authStore.logout();
+};
 
-// // Fetch Category
-// onMounted(async () => {
-//   categories.value = await productStore.fetchCategories();
-// });
+// Fetch Category
+onMounted(async () => {
+  categories.value = await productStore.fetchCategories();
+});
 </script>
 
 <template>
