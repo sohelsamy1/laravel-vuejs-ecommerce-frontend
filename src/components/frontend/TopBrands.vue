@@ -14,32 +14,57 @@
       </div>
 
       <!-- Loading -->
-      <div class="text-center py-4">
+      <div v-if="store.brandsLoading" class="text-center py-4">
         <div class="spinner-border" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
       </div>
 
       <!-- Error / Empty -->
-      <div class="text-center text-muted py-4">No brands available.</div>
+      <div v-else-if="!store.brands.length" class="text-center text-muted py-4">
+        {{ store.brandsError || "No brands available." }}
+      </div>
 
       <!-- List -->
-      <div class="row align-items-center">
-        <div class="p-2 col-6 col-md-4 col-lg-2">
+      <div v-else class="row align-items-center">
+        <div
+          v-for="brand in store.brands"
+          :key="brand.id"
+          class="p-2 col-6 col-md-4 col-lg-2"
+        >
           <div class="item">
             <div class="categories_box">
-              <a href="/by-brand?id=1">
+              <router-link :to="`/by-brand?id=${brand.id}`">
                 <img
                   src="https://upload.wikimedia.org/wikipedia/en/thumb/0/04/Huawei_Standard_logo.svg/1200px-Huawei_Standard_logo.svg.png"
-                  alt="Brand Name"
+                  :alt="brand.brandName"
                 />
-                <span>Brand Name</span>
-              </a>
+                <!-- <img
+                  :src="brand.brandImg || fallbackImg"
+                  :alt="brand.brandName"
+                /> -->
+                <span>{{ brand.brandName }}</span>
+              </router-link>
             </div>
           </div>
         </div>
-        <!-- Repeat similar blocks as needed -->
       </div>
     </div>
   </div>
 </template>
+
+
+<script setup>
+import { onMounted } from "vue";
+import { useProductStore } from "../../stores/productStore";
+
+
+const store = useProductStore();
+
+
+onMounted(async () => {
+  if (!store.brands.length) {
+    await store.fetchTopBrands();
+  }
+});
+</script>

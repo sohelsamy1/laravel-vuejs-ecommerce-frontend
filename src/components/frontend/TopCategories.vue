@@ -47,14 +47,14 @@ onBeforeMount(async () => {
         >
           <div class="item">
             <div class="categories_box">
-              <a href="/by-category?id=1">
+              <RouterLink :to="`/by-category?id=${category.id}`">
                 <img
                   src="https://img.freepik.com/free-psd/stunning-mountain-landscape-displayed-modern-smart-tv_191095-80909.jpg?semt=ais_hybrid&w=740&q=80"
                   alt="Category Name"
                 />
                 <!-- <img :src="category.categoryImg" :alt="category.categoryName" /> -->
                 <span>{{ category.categoryName }}</span>
-              </a>
+              </RouterLink>
             </div>
           </div>
         </div>

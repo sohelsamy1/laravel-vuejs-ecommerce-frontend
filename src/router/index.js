@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../Pages/HomePage.vue';
 import LoginPage from '../Pages/LoginPage.vue';
 import VerifyPage from '../Pages/VerifyPage.vue';
+import ProductsByCategoryPage from '../Pages/ProductsByCategoryPage.vue';
+
 
 
 const routes = [
@@ -17,7 +19,13 @@ const routes = [
       name: "Verify",
      component: VerifyPage, 
   },
- ]
+     { path: '/by-category',
+      name: "ProductsByCategory",
+     component: ProductsByCategoryPage, 
+  },
+   
+  
+ ];
 
 export const router = createRouter({
   history: createWebHistory(),
