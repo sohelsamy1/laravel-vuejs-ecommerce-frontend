@@ -3,6 +3,7 @@ import HomePage from '../Pages/HomePage.vue';
 import LoginPage from '../Pages/LoginPage.vue';
 import VerifyPage from '../Pages/VerifyPage.vue';
 import ProductsByCategoryPage from '../Pages/ProductsByCategoryPage.vue';
+import ProductsByBrandPage from '../Pages/ProductsByBrandPage.vue';
 
 
 
@@ -23,7 +24,10 @@ const routes = [
       name: "ProductsByCategory",
      component: ProductsByCategoryPage, 
   },
-   
+      { path: '/by-brand',
+      name: "ProductByBrand",
+     component: ProductsByBrandPage, 
+  },
   
  ];
 
