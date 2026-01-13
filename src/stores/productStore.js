@@ -23,19 +23,30 @@ export const useProductStore = defineStore("productStore", () => {
   const trendingProducts = ref([]);
   const loading = ref(false);
 
-  // State for Category Page -->
+  // --- Top Brands ---
+  const brands = ref([]);
+  const brandsLoading = ref(false);
+  const brandsError = ref("");
+
+  // State for Category Page
   const categoryProducts = ref([]);
   const categoryName = ref("");
   const categoryLoading = ref(false);
   const categoryError = ref("");
 
- 
-   // State for Brand Page-->
-   const brandProducts = ref([]);
-   const brandName = ref("");
-   const brandLoading = ref(false);
-   const brandError = ref("");
- 
+  // State for Brand Page
+  const brandProducts = ref([]);
+  const brandName = ref("");
+  const brandLoading = ref(false);
+  const brandError = ref("");
+
+  // Single Product States
+  const productDetails = ref(null);
+  const productImages = ref([]);
+  const productSizes = ref([]);
+  const productColors = ref([]);
+  const detailsLoading = ref(false);
+  const detailsError = ref("");
 
   // ===================Actions=====================
 
@@ -124,7 +135,24 @@ export const useProductStore = defineStore("productStore", () => {
     await fetchProductsByRemark(tabName);
   };
 
-  // Load Products for Single CategoryPage/ProductsByCategory Page-->
+  // --- Top Brands ---
+  const fetchTopBrands = async () => {
+    brandsLoading.value = true;
+    brandsError.value = "";
+    try {
+      const res = await apiClient.get("/BrandList");
+      brands.value = res?.data?.data || [];
+    } catch (err) {
+      console.error("Failed to load brands:", err);
+      brands.value = [];
+      brandsError.value = "Failed to load brands.";
+      cogoToast.error("Failed to load brands.");
+    } finally {
+      brandsLoading.value = false;
+    }
+  };
+
+  // Load Products for Single Category Page
   const fetchProductsByCategory = async (categoryId) => {
     categoriesLoading.value = true;
     try {
@@ -143,26 +171,81 @@ export const useProductStore = defineStore("productStore", () => {
       categoriesLoading.value = false;
     }
   };
-  
-    // Load Products for Single Brand Page-->
-    const fetchProductsByBrand = async (brandId) => {
-      brandLoading.value = true;
-      try {
-        const brandRes = await apiClient.get(`/BrandList`);
-        const brands = brandRes?.data?.data || [];
-        const found = brands.find((b) => b.id == brandId);
-        brandName.value = found?.brandName || "";
-  
-        const res = await apiClient.get(`/ListProductByBrand/${brandId}`);
-        console.log(res);
-        brandProducts.value = res?.data?.data ?? [];
-      } catch (e) {
-        brandError.value = "Failed to load top categories";
-        brandProducts.value = [];
-      } finally {
-        brandLoading.value = false;
-      }
-    };
+
+  // Load Products for Single Brand Page
+  const fetchProductsByBrand = async (brandId) => {
+    brandLoading.value = true;
+    try {
+      const brandRes = await apiClient.get(`/BrandList`);
+      const brands = brandRes?.data?.data || [];
+      const found = brands.find((b) => b.id == brandId);
+      brandName.value = found?.brandName || "";
+
+      const res = await apiClient.get(`/ListProductByBrand/${brandId}`);
+      console.log(res);
+      brandProducts.value = res?.data?.data ?? [];
+    } catch (e) {
+      brandError.value = "Failed to load top categories";
+      brandProducts.value = [];
+    } finally {
+      brandLoading.value = false;
+    }
+  };
+
+  // Fetch Single Product Details
+  const fetchProductDetailsById = async (id) => {
+    detailsLoading.value = true;
+    try {
+      const res = await apiClient.get(`/ProductDetailsById/${id}`);
+      const list = res?.data?.data || [];
+      const row = list[0] || null;
+      // console.log(row);
+
+      productDetails.value = row;
+
+      // Images
+      productImages.value = [row?.img1, row?.img2, row?.img3, row?.img4].filter(
+        Boolean
+      );
+
+      // Size
+      productSizes.value = (row?.size || "")
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      // Colors
+      productColors.value = (row?.color || "")
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean);
+    } catch (e) {
+      detailsError.value = "Failed to load product details";
+      productDetails.value = null;
+      productImages.value = [];
+      productSizes.value = [];
+      productColors.value = [];
+      cogoToast.error("Failed to load product.");
+    } finally {
+      detailsLoading.value = false;
+    }
+  };
+
+  // Add to Cart
+  const addToCart = async ({ product_id, color, size, qty }) => {
+    try {
+      await apiClient.post("/CreateCartList", {
+        product_id,
+        color,
+        size,
+        qty,
+      });
+      cogoToast.success("Product added to cart");
+    } catch (e) {
+      // console.error(e);
+      cogoToast.error("Failed to add product to cart");
+    }
+  };
 
   return {
     // Categories
@@ -190,24 +273,36 @@ export const useProductStore = defineStore("productStore", () => {
     loadProductsByTab,
     fetchProductsByRemark,
 
-    // Top Brands-->
+    // Top Brands
     brands,
     brandsLoading,
     brandsError,
     fetchTopBrands,
 
-    // Category Page-->
+    // Category Page
     categoryProducts,
     categoryName,
     categoryLoading,
     categoryError,
     fetchProductsByCategory,
-    
+
     // Brand Page
     brandProducts,
     brandName,
     brandLoading,
     brandError,
     fetchProductsByBrand,
+
+    // Product Details
+    productDetails,
+    productImages,
+    productSizes,
+    productColors,
+    detailsLoading,
+    detailsError,
+    fetchProductDetailsById,
+
+    // Add to cart
+    addToCart,
   };
 });

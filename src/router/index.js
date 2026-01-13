@@ -4,6 +4,7 @@ import LoginPage from '../Pages/LoginPage.vue';
 import VerifyPage from '../Pages/VerifyPage.vue';
 import ProductsByCategoryPage from '../Pages/ProductsByCategoryPage.vue';
 import ProductsByBrandPage from '../Pages/ProductsByBrandPage.vue';
+import DetailsPage from '../Pages/DetailsPage.vue';
 
 
 
@@ -12,23 +13,26 @@ const routes = [
     name: "Home",
      component: HomePage,
   },
-    { path: '/login',
+   { path: '/login',
       name: "Login",
      component: LoginPage, 
   },
-     { path: '/verify',
-      name: "Verify",
+   { path: '/verify',
+     name: "Verify",
      component: VerifyPage, 
   },
      { path: '/by-category',
       name: "ProductsByCategory",
      component: ProductsByCategoryPage, 
   },
-      { path: '/by-brand',
+     { path: '/by-brand',
       name: "ProductByBrand",
      component: ProductsByBrandPage, 
   },
-  
+   { path: '/details',
+     name: "ProductDetails",
+     component: DetailsPage, 
+  },
  ];
 
 export const router = createRouter({
