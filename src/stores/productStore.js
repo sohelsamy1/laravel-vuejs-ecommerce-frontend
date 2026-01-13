@@ -48,6 +48,11 @@ export const useProductStore = defineStore("productStore", () => {
   const detailsLoading = ref(false);
   const detailsError = ref("");
 
+  // ====== Reviews State ======
+  const reviews = ref([]);
+  const reviewsLoading = ref(false);
+  const reviewsError = ref("");
+
   // ===================Actions=====================
 
   // Fetch Sliders
@@ -247,6 +252,47 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
+    // POST /CreateProductReview
+  const createReview = async ({ product_id, description, rating }) => {
+    try {
+      const body = { product_id, description, rating };
+      const res = await apiClient.post(`/CreateProductReview`, body);
+      cogoToast.success("Review added.");
+      // refresh reviews
+      await fetchReviewsByProduct(product_id);
+    } catch (err) {
+      if (
+        err?.response?.status === 401 ||
+        err?.response?.data?.status === "unauthorized"
+      ) {
+      } else {
+        console.error("Failed to add review:", err);
+        cogoToast.error("Failed to add review.");
+      }
+    }
+  };
+
+  // GET /ListReviewByProduct/{id}
+  const fetchReviewsByProduct = async (id) => {
+    if (!id) {
+      reviewsError.value = "Invalid product.";
+      reviews.value = [];
+      return;
+    }
+    reviewsLoading.value = true;
+    reviewsError.value = "";
+    try {
+      const res = await apiClient.get(`/ListReviewByProduct/${id}`);
+      reviews.value = res?.data?.data || [];
+    } catch (err) {
+      console.error("Failed to load reviews:", err);
+      reviews.value = [];
+      reviewsError.value = "Failed to load reviews.";
+    } finally {
+      reviewsLoading.value = false;
+    }
+  };
+
   return {
     // Categories
     fetchCategories,
@@ -304,5 +350,13 @@ export const useProductStore = defineStore("productStore", () => {
 
     // Add to cart
     addToCart,
+
+    // Reviews
+    reviews,
+    reviewsLoading,
+    reviewsError,
+    fetchReviewsByProduct,
+    createReview,
+
   };
 });

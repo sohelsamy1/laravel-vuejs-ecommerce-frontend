@@ -3,6 +3,7 @@ import cogoToast from "cogo-toast";
 import { useRoute } from "vue-router";
 import { useProductStore } from "../stores/productStore";
 import { onBeforeMount, watch, ref } from "vue";
+import ProductSpecification from "../components/frontend/ProductSpecification.vue";
 
 const store = useProductStore();
 const route = useRoute();
@@ -53,6 +54,11 @@ const onAddToCart = async () => {
     color: selectedColor.value,
     qty: quantity.value,
   });
+};
+
+const onAddToWishlist = async () => {
+  const id = route.query.id;
+  await store.addToWishlist(id);
 };
 </script>
 
@@ -178,7 +184,12 @@ const onAddToCart = async () => {
                 >
                   <i class="icon-basket-loaded"></i> Add to cart
                 </button>
-                <button class="btn btn-link add_wishlist" type="button">
+                <button
+                  class="btn btn-link add_wishlist"
+                  type="button"
+                  @click="onAddToWishlist"
+                >
+                  <!-- <i class="icon-heart"></i> -->
                   <i class="fa fa-heart"></i>
                 </button>
               </div>
@@ -200,15 +211,7 @@ const onAddToCart = async () => {
       </div>
 
       <!-- Product Specification (placeholder for static HTML) -->
-      <div class="product-specification mt-5">
-        <h4>Specifications</h4>
-        <ul>
-          <li>Material: Example Material</li>
-          <li>Dimensions: 10 x 20 x 5 cm</li>
-          <li>Weight: 500g</li>
-          <li>Model: ABC-123</li>
-        </ul>
-      </div>
+      <ProductSpecification />
     </div>
   </div>
 </template>
