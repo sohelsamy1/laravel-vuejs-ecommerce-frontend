@@ -53,6 +53,16 @@ export const useProductStore = defineStore("productStore", () => {
   const reviewsLoading = ref(false);
   const reviewsError = ref("");
 
+  // --- Orders ---
+  const orders = ref([]);
+  const ordersLoading = ref(false);
+  const ordersError = ref("");
+  
+  // invoice modal state
+  const invoiceProducts = ref([]);
+  const invoiceLoader = ref(false);
+  const showInvoiceModal = ref(false);
+
   // ===================Actions=====================
 
   // Fetch Sliders
@@ -293,6 +303,45 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
+    // GET /OrderListRequest
+  const loadOrders = async () => {
+    ordersLoading.value = true;
+    try {
+      const res = await apiClient.get("/InvoiceList");
+
+      orders.value = Array.isArray(res?.data) ? res.data : [];
+      // console.log(orders.value);
+    } catch (e) {
+      console.error("Error loading orders:", e);
+      ordersError.value = "Failed to load orders.";
+      cogoToast.error(ordersError.value);
+      orders.value = [];
+    } finally {
+      ordersLoading.value = false;
+    }
+  };
+
+    // get invoice product list
+  const loadInvoiceProducts = async (orderId) => {
+    invoiceLoader.value = true;
+    try {
+      const res = await apiClient.get(`/InvoiceProductList/${orderId}`);
+      invoiceProducts.value = Array.isArray(res?.data) ? res.data : [];
+      showInvoiceModal.value = true; // open modal
+    } catch (e) {
+      console.error("Error loading invoice products:", e);
+      cogoToast.error("Failed to load invoice products.");
+      invoiceProducts.value = [];
+    } finally {
+      invoiceLoader.value = false;
+    }
+  };
+
+  const closeInvoiceModal = () => {
+    showInvoiceModal.value = false;
+    invoiceProducts.value = [];
+  };
+
   return {
     // Categories
     fetchCategories,
@@ -357,6 +406,19 @@ export const useProductStore = defineStore("productStore", () => {
     reviewsError,
     fetchReviewsByProduct,
     createReview,
+
+    // Orders
+    orders,
+    ordersLoading,
+    ordersError,
+    loadOrders,
+
+    // invoice modal state
+    invoiceProducts,
+    invoiceLoader,
+    showInvoiceModal,
+    loadInvoiceProducts,
+    closeInvoiceModal,
 
   };
 });

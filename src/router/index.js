@@ -6,6 +6,7 @@ import ProductsByCategoryPage from '../Pages/ProductsByCategoryPage.vue';
 import ProductsByBrandPage from '../Pages/ProductsByBrandPage.vue';
 import DetailsPage from '../Pages/DetailsPage.vue';
 import ProfilePage from '../Pages/ProfilePage.vue';
+import OrdersPage from '../Pages/OrdersPage.vue';
 
 
 
@@ -37,6 +38,10 @@ const routes = [
     { path: '/profile',
      name: "profile",
      component: ProfilePage, 
+  },
+   { path: '/orders',
+     name: "orders",
+     component: OrdersPage, 
   },
  ];
 
