@@ -1,6 +1,6 @@
 import cogoToast from "cogo-toast";
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import apiClient from "../services/apiClient";
 
@@ -62,6 +62,11 @@ export const useProductStore = defineStore("productStore", () => {
   const invoiceProducts = ref([]);
   const invoiceLoader = ref(false);
   const showInvoiceModal = ref(false);
+
+  // Cart States
+  const cartItems = ref([]);
+  const cartLoading = ref(false);
+  const cartError = ref("");
 
   // ===================Actions=====================
 
@@ -342,6 +347,83 @@ export const useProductStore = defineStore("productStore", () => {
     invoiceProducts.value = [];
   };
 
+  // GET /CartList
+  const fetchCart = async () => {
+    cartLoading.value = true;
+
+    try {
+      const res = await apiClient.get("/CartList");
+      if (res?.data?.status === "unauthorized" || res?.status === 401) {
+        cartItems.value = [];
+        return;
+      }
+      cartItems.value = res?.data?.data || [];
+    } catch (err) {
+      cartError.value = "Failed to load cart.";
+      cogoToast.error("Failed to load cart.");
+
+      cartItems.value = [];
+    } finally {
+      cartLoading.value = false;
+    }
+  };
+
+   // GET /DeleteCartList/{product_id}
+  const removeFromCart = async (productId) => {
+    if (!productId) return;
+    const prev = [...cartItems.value];
+    // optimistic UI
+    cartItems.value = cartItems.value.filter(
+      (it) => it.product_id !== productId
+    );
+    try {
+      const res = await apiClient.get(`/DeleteCartList/${productId}`);
+      if (res?.data?.status === "unauthorized" || res?.status === 401) {
+        cartItems.value = prev;
+
+        return;
+      }
+      // if (res.status !== 200) throw new Error("Delete failed");
+      cogoToast.success("Removed from cart.");
+    } catch (err) {
+      cartItems.value = prev;
+
+      console.error("Failed to remove cart item:", err);
+      cogoToast.error("Failed to remove. Please try again.");
+    }
+  };
+
+    // Total derived from cartItems
+    const cartTotal = computed(() =>
+      cartItems.value.reduce((sum, item) => sum + parseFloat(item?.price || 0), 0)
+    );
+  
+    // Invoice States
+    const paymentMethods = ref([]);
+    const invoiceLoading = ref(false);
+    const invoiceError = ref("");
+  
+    // GET /InvoiceCreate
+    const createInvoice = async () => {
+      invoiceLoading.value = true;
+      try {
+        const res = await apiClient.get("/InvoiceCreate");
+        if (res?.data?.status === "unauthorized" || res?.status === 401) {
+          return;
+        }
+        // API shape (as per your blade): data[0].paymentMethod -> array
+        const methods = res?.data?.data?.[0]?.paymentMethod || [];
+        paymentMethods.value = methods;
+        // return methods;
+      } catch (err) {
+        console.error("Failed to create invoice:", err);
+        invoiceError.value = "Failed to create invoice.";
+        cogoToast.error("Failed to create invoice.");
+      } finally {
+        invoiceLoading.value = false;
+      }
+    };
+
   return {
     // Categories
     fetchCategories,
@@ -419,6 +501,20 @@ export const useProductStore = defineStore("productStore", () => {
     showInvoiceModal,
     loadInvoiceProducts,
     closeInvoiceModal,
+
+    // CART
+    cartItems,
+    cartLoading,
+    cartError,
+    cartTotal,
+    fetchCart,
+    removeFromCart,
+
+    // CHECKOUT / INVOICE
+    paymentMethods,
+    invoiceLoading,
+    invoiceError,
+    createInvoice,
 
   };
 });

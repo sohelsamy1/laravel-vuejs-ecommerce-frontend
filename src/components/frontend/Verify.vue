@@ -1,22 +1,26 @@
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
 import cogoToast from "cogo-toast";
 import { useAuthStore } from "../../stores/authStore";
 
 const authStore = useAuthStore();
+const router = useRouter();
 const code = ref("");
 
 const handleVerify = async () => {
-  const cleaned = String(code.value || "")
-    .replace(/\D/g, "")
-    .slice(0, 6);
+  const otp = String(code.value).replace(/\D/g, "").slice(0, 6);
 
-  if (cleaned.length !== 6) {
+  if (otp.length !== 6) {
     cogoToast.error("OTP must be 6 digits");
     return;
   }
 
-  await authStore.verifyOTP(cleaned);
+  const success = await authStore.verifyOTP(otp);
+
+  if (success) {
+    router.push("/cart"); // or "/"
+  }
 };
 </script>
 
@@ -36,11 +40,10 @@ const handleVerify = async () => {
                   <input
                     v-model="code"
                     type="text"
-                    inputmode="numeric"
                     maxlength="6"
                     class="form-control"
                     placeholder="Enter 6 digit OTP"
-                    autocomplete="one-time-code"
+                    inputmode="numeric"
                   />
                 </div>
 
@@ -58,5 +61,3 @@ const handleVerify = async () => {
     </div>
   </div>
 </template>
-
-<style scoped></style>

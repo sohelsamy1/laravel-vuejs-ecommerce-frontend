@@ -1,12 +1,14 @@
 import { createApp } from "vue";
-import "./style.css";
 import App from "./App.vue";
 import router from "./router";
 import { createPinia } from "pinia";
+
+// Bootstrap (CSS first, then JS)
+import "./assets/bootstrap/css/bootstrap.min.css";
 import "bootstrap";
 
-// Loading CSS files
-import "./assets/bootstrap/css/bootstrap.min.css";
+// Project CSS
+import "./style.css";
 import "./assets/css/animate.css";
 import "./assets/css/all.min.css";
 import "./assets/css/ionicons.min.css";
