@@ -1,30 +1,21 @@
 <script setup>
 import { computed, onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/authStore";
 import { useProductStore } from "../../stores/productStore";
 
-const router = useRouter();
 const authStore = useAuthStore();
 const productStore = useProductStore();
 
-const isLoggedIn = computed(() => !!authStore.isAuthenticated); // ✅ boolean
+const isLoggedIn = computed(() => authStore.isAuthenticated);
 const categories = ref([]);
 
 const handleLogout = async () => {
   await authStore.logout();
-  router.push("/login"); // ✅ logout হলে login এ যাও
 };
 
 // Fetch Category
 onMounted(async () => {
-  try {
-    const data = await productStore.fetchCategories();
-    categories.value = Array.isArray(data) ? data : [];
-  } catch (e) {
-    console.log("Category fetch error:", e);
-    categories.value = [];
-  }
+  categories.value = await productStore.fetchCategories();
 });
 </script>
 
@@ -43,37 +34,26 @@ onMounted(async () => {
               </ul>
             </div>
           </div>
-
           <div class="col-md-6">
             <div class="text-center text-md-end">
               <ul class="header_list">
                 <li>
-                  <RouterLink :to="{ path: '/policy', query: { type: 'about' } }">
-                    About
-                  </RouterLink>
+                  <a href="/policy?type=about">About</a>
                 </li>
-
-                <!-- ✅ Login থাকলে Account, না থাকলে Login -->
-                <li v-if="isLoggedIn">
-                  <RouterLink to="/profile">
+                <li>
+                  <a href="/profile">
                     <i class="linearicons-user"></i> Account
-                  </RouterLink>
+                  </a>
                 </li>
-                <li v-else>
-                  <RouterLink to="/login">
-                    <i class="linearicons-user"></i> Account
-                  </RouterLink>
-                </li>
-
                 <li v-if="isLoggedIn">
                   <button @click="handleLogout" class="btn btn-danger btn-sm">
                     Logout
                   </button>
                 </li>
                 <li v-else>
-                  <RouterLink to="/login" class="btn btn-danger btn-sm">
-                    Login
-                  </RouterLink>
+                  <RouterLink to="/login" class="btn btn-danger btn-sm"
+                    >Login</RouterLink
+                  >
                 </li>
               </ul>
             </div>
@@ -85,10 +65,13 @@ onMounted(async () => {
     <div class="bottom_header dark_skin main_menu_uppercase">
       <div class="container">
         <nav class="navbar navbar-expand-lg">
-          <RouterLink class="navbar-brand" to="/">
-            <img class="logo_dark" src="" alt="logo" />
-          </RouterLink>
-
+          <a class="navbar-brand" href="/">
+            <img
+              class="logo_dark"
+              src=""
+              alt="logo"
+            />
+          </a>
           <button
             class="navbar-toggler"
             type="button"
@@ -98,49 +81,40 @@ onMounted(async () => {
           >
             <span class="ion-android-menu"></span>
           </button>
-
           <div
             class="collapse navbar-collapse justify-content-end"
             id="navbarSupportedContent"
           >
             <ul class="navbar-nav">
               <li>
-                <RouterLink class="nav-link nav_item" to="/">Home</RouterLink>
+                <a class="nav-link nav_item" href="/">Home</a>
               </li>
-
               <li class="dropdown">
-                <a class="dropdown-toggle nav-link" href="#" data-bs-toggle="dropdown">
-                  Products
-                </a>
-
+                <a
+                  class="dropdown-toggle nav-link"
+                  href="#"
+                  data-bs-toggle="dropdown"
+                  >Products</a
+                >
                 <div class="dropdown-menu">
                   <ul id="CategoryItem">
-                    <li v-if="categories.length === 0" class="px-3 py-2">
-                      <small>No categories</small>
-                    </li>
-
                     <li v-for="category in categories" :key="category.id">
-                      <RouterLink
-                        class="dropdown-item nav-link nav_item"
-                        :to="{ path: '/by-category', query: { id: category.id } }"
-                      >
-                        {{ category?.categoryName || "Category" }}
-                      </RouterLink>
+                      <a class="dropdown-item nav-link nav_item" href="#">
+                        {{ category.categoryName }}
+                      </a>
                     </li>
                   </ul>
                 </div>
               </li>
-
               <li>
-                <RouterLink class="nav-link nav_item" to="/wish">
+                <a class="nav-link nav_item" href="/wish">
                   <i class="ti-heart"></i> Wish
-                </RouterLink>
+                </a>
               </li>
-
               <li>
-                <RouterLink class="nav-link nav_item" to="/cart">
+                <a class="nav-link nav_item" href="/cart">
                   <i class="linearicons-cart"></i> Cart
-                </RouterLink>
+                </a>
               </li>
             </ul>
           </div>
@@ -149,5 +123,3 @@ onMounted(async () => {
     </div>
   </header>
 </template>
-
-<style scoped></style>
