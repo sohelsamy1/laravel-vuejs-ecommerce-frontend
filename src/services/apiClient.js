@@ -1,21 +1,21 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  // ✅ Use env if available, fallback to localhost
+ 
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
 
-  withCredentials: true, // ✅ JWT cookie support (important)
+  withCredentials: true, 
 
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
   },
 
-  timeout: 15000, // ✅ avoid hanging requests
+  timeout: 15000, 
 });
 
 // ===============================
-// ✅ Request Interceptor
+// Request Interceptor
 // ===============================
 apiClient.interceptors.request.use(
   (config) => {

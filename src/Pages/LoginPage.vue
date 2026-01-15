@@ -1,18 +1,14 @@
 <script setup>
-import AppLayout from '../components/Layout/AppLayout.vue';
-import Login from '../components/frontend/Login.vue';
-import MenuBar from '../components/frontend/MenuBar.vue';
-
-
-
-
+import AppLayout from "../layout/AppLayout.vue";
+import MenuBar from "../components/frontend/MenuBar.vue";
+import Login from "../components/frontend/Login.vue";
 </script>
 
 <template>
-<AppLayout> 
-    <MenuBar />
+  <AppLayout>
+      
     <Login />
-</AppLayout>
+  </AppLayout>
 </template>
 
 <style scoped>

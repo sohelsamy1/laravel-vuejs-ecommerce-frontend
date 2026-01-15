@@ -1,15 +1,14 @@
-<script setup>
-import Footer from "./components/frontend/Footer.vue";
-import MenuBar from "./components/frontend/MenuBar.vue";
-
-</script>
-
 <template>
-<MenuBar />
- <RouterView />
- <Footer />
+  <MenuBar />
+
+  <main class="main_content">
+    <RouterView />
+  </main>
+
+  <Footer />
 </template>
 
-<style scoped>
-
-</style>
+<script setup>
+import MenuBar from "./components/frontend/MenuBar.vue";
+import Footer from "./components/frontend/Footer.vue";
+</script>

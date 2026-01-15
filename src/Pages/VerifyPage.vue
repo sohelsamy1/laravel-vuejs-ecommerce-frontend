@@ -1,16 +1,14 @@
 <script setup>
-import AppLayout from '../components/Layout/AppLayout.vue';
-import MenuBar from '../components/frontend/MenuBar.vue';
-import Verify from '../components/frontend/Verify.vue';
-
-
+import AppLayout from "../layout/AppLayout.vue";
+import MenuBar from "../components/frontend/MenuBar.vue";
+import Verify from "../components/frontend/Verify.vue";
 </script>
 
 <template>
- <AppLayout> 
-    <MenuBar />
+  <AppLayout>
+   
     <Verify />
-</AppLayout>
+  </AppLayout>
 </template>
 
 <style scoped>

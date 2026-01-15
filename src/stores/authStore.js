@@ -1,16 +1,24 @@
 import cogoToast from "cogo-toast";
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import apiClient from "../services/apiClient";
 
 export const useAuthStore = defineStore("auth", () => {
   const router = useRouter();
-  // States
-  const userEmail = ref("");
-  const isAuthenticated = ref(localStorage.getItem("email") ?? false);
 
-  // ========= Profile State =========
+  // ----------------------------
+  // Auth State
+  // ----------------------------
+  const userEmail = ref(localStorage.getItem("pending_email") || "");
+  const savedEmail = ref(localStorage.getItem("email") || "");
+  const isAuthenticated = computed(() => !!savedEmail.value);
+
+  const authLoading = ref(false);
+
+  // ----------------------------
+  // Profile State (defaults)
+  // ----------------------------
   const profile = ref({
     cus_name: "",
     cus_add: "",
@@ -32,62 +40,148 @@ export const useAuthStore = defineStore("auth", () => {
   const profileLoading = ref(false);
   const profileSaving = ref(false);
 
-  // ============== Actions =======================
+  // ----------------------------
+  // Helpers
+  // ----------------------------
+  const showBackendValidationError = (e, fallbackMsg) => {
+    const msg = e?.response?.data?.message;
+    const errors = e?.response?.data?.errors;
 
-  // Login
+    // show message
+    cogoToast.error(msg || fallbackMsg);
+
+    // show first validation error if exists
+    if (errors && typeof errors === "object") {
+      const firstKey = Object.keys(errors)[0];
+      const firstErr = errors?.[firstKey]?.[0];
+      if (firstErr) cogoToast.error(firstErr);
+    }
+  };
+
+  // ----------------------------
+  // Actions
+  // ----------------------------
+
+  //  Login (send OTP) - POST
   const login = async (email) => {
+    if (!email) {
+      cogoToast.error("Email is required");
+      return false;
+    }
+
+    authLoading.value = true;
     try {
-      const res = await apiClient.get(`/UserLogin/${email}`);
-      //   console.log(res);
-      if (res.status === 200) {
+      const res = await apiClient.post("/UserLogin", { UserEmail: email });
+
+      if (res?.status === 200) {
         userEmail.value = email;
-        cogoToast.success(res.data.data || "OTP sent to your email");
+        localStorage.setItem("pending_email", email);
+
+        cogoToast.success(res?.data?.data || "OTP sent to your email");
         router.push("/verify");
-      } else {
-        cogoToast.error(res.data.data || "Failed to send OTP");
+        return true;
       }
+
+      cogoToast.error(res?.data?.data || "Failed to send OTP");
+      return false;
     } catch (e) {
-      cogoToast.error("Something went wrong");
+      console.error(e);
+      cogoToast.error(
+        e?.response?.data?.errors?.UserEmail?.[0] ||
+          e?.response?.data?.message ||
+          "OTP send failed"
+      );
+      return false;
+    } finally {
+      authLoading.value = false;
     }
   };
 
-  // Verify OTP
-  const verifyOTP = async (otp) => {
-    try {
-      const res = await apiClient.get(`/VerifyLogin/${userEmail.value}/${otp}`);
-      console.log(res);
-      if (res.status === 200) {
-        localStorage.setItem("email", userEmail.value);
-        isAuthenticated.value = userEmail.value;
-        cogoToast.success(res.data.data || "Login successfull");
-        router.push("/");
-      } else {
-        cogoToast.error(res.data.data || "Failed to verify OTP");
-      }
-    } catch (e) {
-      cogoToast.error("Something went wrong");
-    }
-  };
 
-  // Logout
+
+  //  Verify OTP - POST
+  // Try both payload formats because some backends want otp, some want OTP
+const verifyOTP = async (otp) => {
+  const email = userEmail.value || localStorage.getItem("pending_email") || "";
+
+  if (!email) {
+    cogoToast.error("Email not found. Please login again.");
+    router.push("/login");
+    return false;
+  }
+
+  if (!otp) {
+    cogoToast.error("OTP is required");
+    return false;
+  }
+
+  authLoading.value = true;
+
+  try {
+    const res = await apiClient.post("/VerifyLogin", {
+      UserEmail: email,
+      OTP: otp, 
+    });
+
+    if (res?.status === 200) {
+      localStorage.setItem("email", email);
+      savedEmail.value = email;
+
+      localStorage.removeItem("pending_email");
+      userEmail.value = "";
+
+      cogoToast.success(res?.data?.data || "Login successful");
+      router.push("/");
+      return true;
+    }
+
+    cogoToast.error(res?.data?.data || "Failed to verify OTP");
+    return false;
+  } catch (e) {
+    console.error(e);
+    cogoToast.error(
+      e?.response?.data?.errors?.OTP?.[0] ||
+        e?.response?.data?.errors?.UserEmail?.[0] ||
+        e?.response?.data?.message ||
+        "OTP verification failed"
+    );
+    return false;
+  } finally {
+    authLoading.value = false;
+  }
+};
+
+
+
+  // Logout (try POST, fallback GET)
   const logout = async () => {
     try {
-      await apiClient.get("/logout");
+      await apiClient.post("/logout");
+    } catch (e1) {
+      try {
+        await apiClient.get("/logout");
+      } catch (e2) {
+        console.error(e2);
+      }
+    } finally {
       localStorage.removeItem("email");
+      localStorage.removeItem("pending_email");
+
+      savedEmail.value = "";
+      userEmail.value = "";
+
       router.push("/login");
-    } catch (e) {
-      cogoToast.error("Something went wrong");
     }
   };
 
-  // Load Profile
+  //  Load Profile
   const loadProfile = async () => {
     profileLoading.value = true;
     try {
       const res = await apiClient.get("/ReadProfile");
       const data = res?.data?.data || null;
+
       if (data) {
-        // merge with defaults to avoid missing keys
         profile.value = {
           ...profile.value,
           ...Object.fromEntries(
@@ -97,13 +191,13 @@ export const useAuthStore = defineStore("auth", () => {
       }
     } catch (error) {
       console.error("Error loading profile:", error);
-      cogoToast.error("Failed to load profile.");
+      cogoToast.error(error?.response?.data?.message || "Failed to load profile");
     } finally {
       profileLoading.value = false;
     }
   };
 
-  // Save Profile
+  //  Save Profile
   const saveProfile = async () => {
     profileSaving.value = true;
     try {
@@ -113,22 +207,24 @@ export const useAuthStore = defineStore("auth", () => {
       if (res?.data?.msg === "success") {
         cogoToast.success("Profile saved successfully.");
       } else {
-        cogoToast.error("Save failed.");
+        cogoToast.error(res?.data?.data || "Save failed.");
       }
     } catch (error) {
       console.error("Error saving profile:", error);
-      cogoToast.error("Save failed.");
+      cogoToast.error(error?.response?.data?.message || "Save failed.");
     } finally {
       profileSaving.value = false;
     }
   };
 
   return {
-    // Login States
+    // auth
     userEmail,
+    savedEmail,
     isAuthenticated,
+    authLoading,
 
-    // Login Actions
+    // actions
     login,
     verifyOTP,
     logout,
