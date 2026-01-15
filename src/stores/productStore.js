@@ -1,20 +1,25 @@
+// src/stores/productStore.js
 import cogoToast from "cogo-toast";
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import apiClient from "../services/apiClient";
 
 export const useProductStore = defineStore("productStore", () => {
-  // State for Sliders
+  // =========================
+  // STATE
+  // =========================
+
+  // Sliders
   const sliderItems = ref([]);
   const sliderLoading = ref(false);
   const sliderError = ref("");
 
-  // State for Top Categories
+  // Categories (Top)
   const categories = ref([]);
   const categoriesLoading = ref(false);
   const categoriesError = ref("");
 
-  // Exclusive Products State
+  // Products by remark
   const popularProducts = ref([]);
   const newProducts = ref([]);
   const topProducts = ref([]);
@@ -22,24 +27,24 @@ export const useProductStore = defineStore("productStore", () => {
   const trendingProducts = ref([]);
   const loading = ref(false);
 
-  // --- Top Brands ---
+  // Brands
   const brands = ref([]);
   const brandsLoading = ref(false);
   const brandsError = ref("");
 
-  // State for Category Page
+  // Category page
   const categoryProducts = ref([]);
   const categoryName = ref("");
   const categoryLoading = ref(false);
   const categoryError = ref("");
 
-  // State for Brand Page
+  // Brand page
   const brandProducts = ref([]);
   const brandName = ref("");
   const brandLoading = ref(false);
   const brandError = ref("");
 
-  // Single Product States
+  // Product details
   const productDetails = ref(null);
   const productImages = ref([]);
   const productSizes = ref([]);
@@ -47,29 +52,39 @@ export const useProductStore = defineStore("productStore", () => {
   const detailsLoading = ref(false);
   const detailsError = ref("");
 
-  // ====== Reviews State ======
+  // Reviews
   const reviews = ref([]);
   const reviewsLoading = ref(false);
   const reviewsError = ref("");
 
-  // ====== Cart State  (ADDED) ======
+  // Cart
   const cartItems = ref([]);
   const cartLoading = ref(false);
   const cartError = ref("");
 
-  // --- Orders ---
+  // Orders
   const orders = ref([]);
   const ordersLoading = ref(false);
   const ordersError = ref("");
 
-  // invoice modal state
+  // Invoice modal state
   const invoiceProducts = ref([]);
   const invoiceLoader = ref(false);
   const showInvoiceModal = ref(false);
 
-  // ===================Actions=====================
+  // Invoice / Payment
+  const paymentMethods = ref([]); // optional fallback
+  const paymentUrl = ref(""); // ✅ SSLCommerz URL
+  const invoiceLoading = ref(false);
+  const invoiceError = ref("");
 
-  // Fetch Sliders
+  // =========================
+  // ACTIONS
+  // =========================
+
+  // -------------------------
+  // Sliders
+  // -------------------------
   const fetchSlider = async () => {
     sliderLoading.value = true;
     sliderError.value = "";
@@ -84,7 +99,10 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
-  // Fetch Category for Menu
+  // -------------------------
+  // Categories
+  // -------------------------
+  // For menu dropdown
   const fetchCategories = async () => {
     try {
       const res = await apiClient.get("/CategoryList");
@@ -95,7 +113,7 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
-  // Fetch Top Categories
+  // Top categories (home page, etc.)
   const fetchTopCategories = async () => {
     categoriesLoading.value = true;
     categoriesError.value = "";
@@ -110,7 +128,9 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
-  // Fetch Exclusive Products
+  // -------------------------
+  // Products by remark
+  // -------------------------
   const fetchProductsByRemark = async (remark) => {
     loading.value = true;
     try {
@@ -118,7 +138,7 @@ export const useProductStore = defineStore("productStore", () => {
         `/ListProductByRemark/${String(remark || "").toLowerCase()}`
       );
 
-      if (response.status === 200) {
+      if (response?.status === 200) {
         const products = response?.data?.data ?? [];
 
         switch (String(remark || "").toLowerCase()) {
@@ -148,20 +168,20 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
-  // Load products for a single tab
   const loadProductsByTab = async (tabName) => {
     await fetchProductsByRemark(tabName);
   };
 
-  // --- Top Brands ---
+  // -------------------------
+  // Brands
+  // -------------------------
   const fetchTopBrands = async () => {
     brandsLoading.value = true;
     brandsError.value = "";
     try {
       const res = await apiClient.get("/BrandList");
-      brands.value = res?.data?.data || [];
+      brands.value = res?.data?.data ?? [];
     } catch (err) {
-      console.error("Failed to load brands:", err);
       brands.value = [];
       brandsError.value = "Failed to load brands.";
       cogoToast.error("Failed to load brands.");
@@ -170,16 +190,20 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
-  // Load Products for Single Category Page
+  // -------------------------
+  // Category Page
+  // -------------------------
   const fetchProductsByCategory = async (categoryId) => {
     categoryLoading.value = true;
     categoryError.value = "";
     try {
-      const categoryRes = await apiClient.get(`/CategoryList`);
-      const list = categoryRes?.data?.data || [];
-      const found = list.find((c) => c.id == categoryId);
+      // get category name
+      const categoryRes = await apiClient.get("/CategoryList");
+      const list = categoryRes?.data?.data ?? [];
+      const found = list.find((c) => String(c.id) === String(categoryId));
       categoryName.value = found?.categoryName || "";
 
+      // category products
       const res = await apiClient.get(`/ListProductByCategory/${categoryId}`);
       categoryProducts.value = res?.data?.data ?? [];
     } catch (e) {
@@ -190,16 +214,20 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
-  // Load Products for Single Brand Page
+  // -------------------------
+  // Brand Page
+  // -------------------------
   const fetchProductsByBrand = async (brandId) => {
     brandLoading.value = true;
     brandError.value = "";
     try {
-      const brandRes = await apiClient.get(`/BrandList`);
-      const list = brandRes?.data?.data || [];
-      const found = list.find((b) => b.id == brandId);
+      // get brand name
+      const brandRes = await apiClient.get("/BrandList");
+      const list = brandRes?.data?.data ?? [];
+      const found = list.find((b) => String(b.id) === String(brandId));
       brandName.value = found?.brandName || "";
 
+      // brand products
       const res = await apiClient.get(`/ListProductByBrand/${brandId}`);
       brandProducts.value = res?.data?.data ?? [];
     } catch (e) {
@@ -210,30 +238,29 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
-  // Fetch Single Product Details
+  // -------------------------
+  // Product Details
+  // -------------------------
   const fetchProductDetailsById = async (id) => {
     detailsLoading.value = true;
     detailsError.value = "";
     try {
       const res = await apiClient.get(`/ProductDetailsById/${id}`);
-      const list = res?.data?.data || [];
-      const row = list[0] || null;
+      const list = res?.data?.data ?? [];
+      const row = list?.[0] ?? null;
 
       productDetails.value = row;
 
-      // Images
       productImages.value = [row?.img1, row?.img2, row?.img3, row?.img4].filter(
         Boolean
       );
 
-      // Size
-      productSizes.value = (row?.size || "")
+      productSizes.value = String(row?.size || "")
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean);
 
-      // Colors
-      productColors.value = (row?.color || "")
+      productColors.value = String(row?.color || "")
         .split(",")
         .map((c) => c.trim())
         .filter(Boolean);
@@ -249,8 +276,9 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
-  // ===== CART ACTIONS  (ADDED) =====
-
+  // -------------------------
+  // CART
+  // -------------------------
   // GET /CartList
   const fetchCart = async () => {
     cartLoading.value = true;
@@ -262,7 +290,6 @@ export const useProductStore = defineStore("productStore", () => {
       cartItems.value = [];
       cartError.value = "Failed to load cart";
     } finally {
-      cartLoading.valueogoToast;
       cartLoading.value = false;
     }
   };
@@ -270,41 +297,49 @@ export const useProductStore = defineStore("productStore", () => {
   // POST /CreateCartList
   const addToCart = async ({ product_id, color, size, qty }) => {
     try {
-      await apiClient.post("/CreateCartList", {
-        product_id,
-        color,
-        size,
-        qty,
-      });
+      await apiClient.post("/CreateCartList", { product_id, color, size, qty });
       cogoToast.success("Product added to cart");
       await fetchCart();
     } catch (e) {
       cogoToast.error("Failed to add product to cart");
+      throw e;
     }
   };
 
-  // POST /RemoveCartList
+  // ✅ IMPORTANT: তোমার backend route GET
+  // Route::get('/DeleteCartList/{product_id}', ...)
   const removeFromCart = async (product_id) => {
     try {
-      await apiClient.post("/RemoveCartList", { product_id });
+      if (!product_id) {
+        cogoToast.error("Product id missing!");
+        return;
+      }
+      await apiClient.get(`/DeleteCartList/${product_id}`);
       cogoToast.success("Removed from cart");
-      await fetchCart(); 
+      await fetchCart();
     } catch (e) {
-      cogoToast.error("Failed to remove item");
+      console.error("DeleteCartList failed:", e);
+      cogoToast.error(
+        e?.response?.data?.data ||
+          e?.response?.data?.message ||
+          "Failed to remove item"
+      );
+      throw e;
     }
   };
 
-  // ===== REVIEWS =====
-
+  // -------------------------
+  // REVIEWS
+  // -------------------------
   const createReview = async ({ product_id, description, rating }) => {
     try {
       const body = { product_id, description, rating };
-      await apiClient.post(`/CreateProductReview`, body);
+      await apiClient.post("/CreateProductReview", body);
       cogoToast.success("Review added.");
       await fetchReviewsByProduct(product_id);
     } catch (err) {
-      console.error("Failed to add review:", err);
       cogoToast.error("Failed to add review.");
+      throw err;
     }
   };
 
@@ -318,9 +353,8 @@ export const useProductStore = defineStore("productStore", () => {
     reviewsError.value = "";
     try {
       const res = await apiClient.get(`/ListReviewByProduct/${id}`);
-      reviews.value = res?.data?.data || [];
+      reviews.value = res?.data?.data ?? [];
     } catch (err) {
-      console.error("Failed to load reviews:", err);
       reviews.value = [];
       reviewsError.value = "Failed to load reviews.";
     } finally {
@@ -328,19 +362,19 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
-  // ===== ORDERS =====
-
+  // -------------------------
+  // ORDERS
+  // -------------------------
   const loadOrders = async () => {
     ordersLoading.value = true;
     ordersError.value = "";
     try {
       const res = await apiClient.get("/InvoiceList");
-      orders.value = Array.isArray(res?.data) ? res.data : [];
+      orders.value = res?.data?.data ?? [];
     } catch (e) {
-      console.error("Error loading orders:", e);
+      orders.value = [];
       ordersError.value = "Failed to load orders.";
       cogoToast.error(ordersError.value);
-      orders.value = [];
     } finally {
       ordersLoading.value = false;
     }
@@ -350,10 +384,9 @@ export const useProductStore = defineStore("productStore", () => {
     invoiceLoader.value = true;
     try {
       const res = await apiClient.get(`/InvoiceProductList/${orderId}`);
-      invoiceProducts.value = Array.isArray(res?.data) ? res.data : [];
+      invoiceProducts.value = res?.data?.data ?? res?.data ?? [];
       showInvoiceModal.value = true;
     } catch (e) {
-      console.error("Error loading invoice products:", e);
       cogoToast.error("Failed to load invoice products.");
       invoiceProducts.value = [];
     } finally {
@@ -366,6 +399,53 @@ export const useProductStore = defineStore("productStore", () => {
     invoiceProducts.value = [];
   };
 
+  // -------------------------
+  // CHECKOUT / INVOICE
+  // -------------------------
+  // GET /InvoiceCreate
+  const createInvoice = async () => {
+    invoiceLoading.value = true;
+    invoiceError.value = "";
+    paymentMethods.value = [];
+    paymentUrl.value = "";
+
+    try {
+      const res = await apiClient.get("/InvoiceCreate");
+
+      // ✅ your backend returns: { msg:"success", data:{ paymentMethod:"URL", ... } }
+      const url = res?.data?.data?.paymentMethod || "";
+      if (url) {
+        paymentUrl.value = url;
+        return res; // ✅ IMPORTANT
+      }
+
+      // fallback (if someday backend returns array/list)
+      const methods =
+        res?.data?.data?.[0]?.paymentMethod ??
+        res?.data?.data?.paymentMethods ??
+        [];
+      paymentMethods.value = Array.isArray(methods) ? methods : [];
+
+      return res; // ✅ IMPORTANT
+    } catch (err) {
+      if (err?.response?.status === 401) {
+        invoiceError.value = "Unauthorized. Please login again.";
+      } else {
+        invoiceError.value =
+          err?.response?.data?.data ||
+          err?.response?.data?.message ||
+          "Failed to create invoice.";
+      }
+      cogoToast.error(invoiceError.value);
+      throw err;
+    } finally {
+      invoiceLoading.value = false;
+    }
+  };
+
+  // =========================
+  // EXPORTS
+  // =========================
   return {
     // Categories
     fetchCategories,
@@ -382,7 +462,7 @@ export const useProductStore = defineStore("productStore", () => {
     sliderError,
     fetchSlider,
 
-    // Exclusive Products
+    // Products by remark
     popularProducts,
     newProducts,
     topProducts,
@@ -392,7 +472,7 @@ export const useProductStore = defineStore("productStore", () => {
     loadProductsByTab,
     fetchProductsByRemark,
 
-    // Top Brands
+    // Brands
     brands,
     brandsLoading,
     brandsError,
@@ -421,7 +501,7 @@ export const useProductStore = defineStore("productStore", () => {
     detailsError,
     fetchProductDetailsById,
 
-    // Cart ✅
+    // Cart
     cartItems,
     cartLoading,
     cartError,
@@ -442,11 +522,18 @@ export const useProductStore = defineStore("productStore", () => {
     ordersError,
     loadOrders,
 
-    // invoice modal state
+    // Invoice modal
     invoiceProducts,
     invoiceLoader,
     showInvoiceModal,
     loadInvoiceProducts,
     closeInvoiceModal,
+
+    // Checkout / Invoice
+    paymentMethods,
+    paymentUrl,
+    invoiceLoading,
+    invoiceError,
+    createInvoice,
   };
 });

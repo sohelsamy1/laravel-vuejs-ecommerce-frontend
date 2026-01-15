@@ -24,7 +24,6 @@
     <div class="container my-5">
       <div class="row">
         <div class="col-12">
-
           <!-- Loading -->
           <div v-if="store.cartLoading" class="text-center py-5">
             <div class="spinner-border text-primary" role="status">
@@ -33,7 +32,7 @@
             <p class="mt-3">Loading cart...</p>
           </div>
 
-          <!-- Error / Empty -->
+          <!-- Empty / Error -->
           <div v-else-if="cartItems.length === 0" class="text-center py-5">
             <p class="text-muted mb-0">
               {{ store.cartError || "Your cart is empty." }}
@@ -42,44 +41,60 @@
 
           <!-- Table -->
           <div v-else class="table-responsive shop_cart_table">
-            <table class="table">
+            <table class="table align-middle cart-table">
               <thead>
                 <tr>
-                  <th class="product-thumbnail">&nbsp;</th>
-                  <th class="product-name">Product</th>
-                  <th class="product-quantity">Quantity</th>
-                  <th class="product-subtotal">Total</th>
-                  <th class="product-remove">Remove</th>
+                  <th class="text-center" style="width: 110px">Image</th>
+                  <th>Product</th>
+
+                  <!-- ✅ Qty left -->
+                  <th class="text-start" style="width: 120px">Qty</th>
+
+                  <!-- ✅ Total left -->
+                  <th class="text-start" style="width: 160px">Total</th>
+
+                  <th class="text-center" style="width: 150px">Action</th>
                 </tr>
               </thead>
 
               <tbody>
-                <tr v-for="row in cartItems" :key="row.product_id">
-                  <td class="product-thumbnail">
+                <tr v-for="row in cartItems" :key="rowKey(row)">
+                  <td class="text-center">
                     <img
+                      class="cart-img"
                       :src="row.product?.image || '/placeholder.png'"
                       alt="product"
                     />
                   </td>
 
-                  <td class="product-name">
-                    {{ row.product?.title || "N/A" }}
+                  <td>
+                    <div class="fw-semibold">
+                      {{ row.product?.title || row.product?.name || "N/A" }}
+                    </div>
+                    <small class="text-muted" v-if="row.size || row.color">
+                      <span v-if="row.size">Size: {{ row.size }}</span>
+                      <span v-if="row.size && row.color"> • </span>
+                      <span v-if="row.color">Color: {{ row.color }}</span>
+                    </small>
                   </td>
 
-                  <td class="product-quantity">
+                  <td class="text-start">
                     {{ row.qty ?? 0 }}
                   </td>
 
-                  <td class="product-subtotal">
+                  <td class="text-start">
                     $ {{ getRowTotal(row) }}
                   </td>
 
-                  <td class="product-remove">
+                  <td class="text-center">
                     <button
-                      class="btn btn-sm btn-link text-danger"
-                      @click="onRemove(row.product_id)"
+                      class="btn btn-sm btn-danger px-3"
+                      type="button"
+                      :disabled="removingPid === getPid(row) || store.cartLoading"
+                      @click="onRemoveRow(row)"
                     >
-                      <i class="ti-close"></i>
+                      <span v-if="removingPid === getPid(row)">Removing...</span>
+                      <span v-else>Remove</span>
                     </button>
                   </td>
                 </tr>
@@ -87,60 +102,65 @@
 
               <tfoot>
                 <tr>
-                  <td colspan="5" class="px-0">
-                    <div class="row g-0 align-items-center">
-                      <div class="col-lg-4 col-md-6 mb-3 mb-md-0">
-                        Total: $
-                        <span>{{ cartTotal }}</span>
-                      </div>
-                      <div class="col-lg-8 col-md-6 text-start text-md-end">
-                        <button class="btn btn-line-fill btn-sm" @click="onCheckout">
-                          Check Out
-                        </button>
-                      </div>
+                  <td colspan="3" class="text-start">
+                    <div class="fw-semibold">
+                      Total: $ <span class="fw-bold">{{ cartTotal }}</span>
                     </div>
+                  </td>
+
+                  <td colspan="2" class="text-end">
+                    <button
+                      class="btn btn-line-fill btn-sm px-4"
+                      type="button"
+                      @click="onCheckout"
+                      :disabled="store.invoiceLoading || cartItems.length === 0"
+                    >
+                      {{ store.invoiceLoading ? "Processing..." : "Check Out" }}
+                    </button>
                   </td>
                 </tr>
               </tfoot>
             </table>
           </div>
-
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Optional fallback modal -->
+  <PaymentMethodList
+    ref="modalRef"
+    :methods="store.paymentMethods"
+    :loading="store.invoiceLoading"
+    :error="store.invoiceError"
+  />
 </template>
 
 <script setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 import cogoToast from "cogo-toast";
 import { useProductStore } from "../stores/productStore";
+import PaymentMethodList from "../components/frontend/PaymentMethodList.vue";
 
 const store = useProductStore();
+const modalRef = ref(null);
+const removingPid = ref(null);
+
+const cartItems = computed(() =>
+  Array.isArray(store.cartItems) ? store.cartItems : []
+);
 
 /**
- *  Safe cartItems
+ * ✅ IMPORTANT:
+ * Backend route: GET /DeleteCartList/{product_id}
+ * তাই remove করার জন্য product_id লাগবেই।
  */
-const cartItems = computed(() => Array.isArray(store.cartItems) ? store.cartItems : []);
+const getPid = (row) => row?.product_id ?? row?.product?.id ?? null;
 
-/**
-  Safe total
- */
-const cartTotal = computed(() => {
-  if (store.cartTotal !== undefined && store.cartTotal !== null) {
-    const t = Number(store.cartTotal || 0);
-    return Number.isFinite(t) ? t.toFixed(2) : "0.00";
-  }
+// stable key
+const rowKey = (row) => getPid(row) ?? JSON.stringify(row);
 
-  const sum = cartItems.value.reduce((acc, row) => {
-    const qty = Number(row?.qty || 0);
-     const price = Number(row?.price ?? row?.product?.price ?? 0);
-    return acc + qty * price;
-  }, 0);
-
-  return sum.toFixed(2);
-});
-
+// row total
 const getRowTotal = (row) => {
   const qty = Number(row?.qty || 0);
   const price = Number(row?.price ?? row?.product?.price ?? 0);
@@ -148,25 +168,81 @@ const getRowTotal = (row) => {
   return Number.isFinite(total) ? total.toFixed(2) : "0.00";
 };
 
-const onRemove = async (productId) => {
+// cart total
+const cartTotal = computed(() => {
+  const sum = cartItems.value.reduce((acc, row) => {
+    const qty = Number(row?.qty || 0);
+    const price = Number(row?.price ?? row?.product?.price ?? 0);
+    return acc + qty * price;
+  }, 0);
+  return Number.isFinite(sum) ? sum.toFixed(2) : "0.00";
+});
+
+const onRemoveRow = async (row) => {
+  const pid = getPid(row);
+
+  if (!pid) {
+    cogoToast.error("product_id not found in row!");
+    console.log("Row debug:", row);
+    return;
+  }
+
+  const ok = window.confirm("Remove this item from cart?");
+  if (!ok) return;
+
   try {
-    await store.removeFromCart(productId);
-    await store.fetchCart();
+    removingPid.value = pid;
+
+    // ✅ store.removeFromCart expects product_id (because backend uses DeleteCartList/{product_id})
+    await store.removeFromCart(pid);
+
+    // store.removeFromCart already calls fetchCart(), but safe to call again if you want:
+    // await store.fetchCart();
+
     cogoToast.success("Removed from cart");
   } catch (e) {
+    console.error(e);
     cogoToast.error("Failed to remove item");
+  } finally {
+    removingPid.value = null;
   }
 };
 
-const onCheckout = () => {
-  cogoToast.info("Payment method page will be added later.");
+const onCheckout = async () => {
+  if (cartItems.value.length === 0 || store.invoiceLoading) return;
+
+  try {
+    const res = await store.createInvoice();
+    const payUrl = res?.data?.data?.paymentMethod || store.paymentUrl || "";
+
+    if (payUrl) {
+      window.location.href = payUrl;
+      return;
+    }
+
+    // fallback modal
+    modalRef.value?.show?.();
+  } catch (e) {
+    modalRef.value?.show?.();
+  }
 };
 
 onMounted(async () => {
-  try {
-    await store.fetchCart();
-  } catch (e) {
-      console.error(e);
-  }
+  await store.fetchCart();
 });
 </script>
+
+<style scoped>
+.cart-img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Qty/Total একটু left spacing */
+.cart-table th.text-start,
+.cart-table td.text-start {
+  padding-left: 18px;
+}
+</style>

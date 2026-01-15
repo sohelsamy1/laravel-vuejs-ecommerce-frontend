@@ -35,6 +35,7 @@
               Profile
             </button>
           </li>
+
           <li class="nav-item" role="presentation">
             <button
               @click="navigateToOrders"
@@ -68,8 +69,8 @@
                 </tr>
               </thead>
 
-              <!-- Loading -->
-              <tbody v-if="store.loading">
+              <!-- ✅ Loading (FIXED) -->
+              <tbody v-if="store.ordersLoading">
                 <tr>
                   <td colspan="6" class="text-center py-4">
                     <div class="spinner-border text-primary" role="status"></div>
@@ -77,8 +78,17 @@
                 </tr>
               </tbody>
 
-              <!-- Empty -->
-              <tbody v-else-if="!store.orders?.length">
+              <!-- ✅ Error -->
+              <tbody v-else-if="store.ordersError">
+                <tr>
+                  <td colspan="6" class="text-center text-danger py-4">
+                    {{ store.ordersError }}
+                  </td>
+                </tr>
+              </tbody>
+
+              <!-- ✅ Empty -->
+              <tbody v-else-if="!orders.length">
                 <tr>
                   <td colspan="6" class="text-center text-muted py-4">
                     No orders found
@@ -86,26 +96,43 @@
                 </tr>
               </tbody>
 
-              <!-- Rows -->
+              <!-- ✅ Rows -->
               <tbody v-else>
-                <tr v-for="(order, i) in store.orders" :key="order.id">
+                <tr v-for="(order, i) in orders" :key="order.id || i">
                   <td>{{ i + 1 }}</td>
-                  <td>$ {{ order.total }}</td>
-                  <td>{{ order.ship_details || "N/A" }}</td>
-                  <td>{{ order.delivery_status || "N/A" }}</td>
-                  <td>{{ order.payment_status || "N/A" }}</td>
+
+                  <!-- Payable -->
+                  <td>
+                    $ {{ formatMoney(order.total ?? order.payable ?? order.grand_total ?? 0) }}
+                  </td>
+
+                  <!-- Shipping -->
+                  <td>{{ order.ship_details || order.shipping_address || "N/A" }}</td>
+
+                  <!-- Delivery -->
+                  <td>{{ order.delivery_status || order.delivery || "N/A" }}</td>
+
+                  <!-- Payment -->
+                  <td>{{ order.payment_status || order.payment || "N/A" }}</td>
+
                   <td>
                     <button
                       class="btn btn-sm btn-outline-primary"
-                      @click="store.loadInvoiceProducts(order.id)"
+                      @click="openProducts(order)"
+                      :disabled="store.invoiceLoader"
                     >
-                      View Products
+                      {{ store.invoiceLoader ? "Loading..." : "View Products" }}
                     </button>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
+
+          <!-- ✅ Optional: small hint -->
+          <p v-if="!store.ordersLoading && orders.length" class="text-muted small mb-0">
+            Showing {{ orders.length }} order(s)
+          </p>
         </div>
       </div>
     </div>
@@ -118,7 +145,7 @@
 </template>
 
 <script setup>
-import { onMounted } from "vue";
+import { computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useProductStore } from "../stores/productStore";
 import InvoiceProductModal from "../components/frontend/InvoiceProductModal.vue";
@@ -130,11 +157,23 @@ const store = useProductStore();
 const navigateToProfile = () => router.push("/profile");
 const navigateToOrders = () => router.push("/orders");
 
+// ✅ safe orders
+const orders = computed(() => (Array.isArray(store.orders) ? store.orders : []));
+
+const formatMoney = (n) => {
+  const num = Number(n || 0);
+  return Number.isFinite(num) ? num.toFixed(2) : "0.00";
+};
+
+const openProducts = async (order) => {
+  const orderId = order?.id || order?.invoice_id;
+  if (!orderId) return;
+  await store.loadInvoiceProducts(orderId);
+};
+
 onMounted(() => {
   store.loadOrders();
 });
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
