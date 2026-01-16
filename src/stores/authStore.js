@@ -13,10 +13,10 @@ export const useAuthStore = defineStore("auth", () => {
   const userEmail = ref(localStorage.getItem("pending_email") || "");
   const savedEmail = ref(localStorage.getItem("email") || "");
 
-  // ✅ backend expects header('id')
+  //  backend expects header('id')
   const userId = ref(localStorage.getItem("user_id") || "");
 
-  // ✅ jwt token
+  // jwt token
   const token = ref(localStorage.getItem("token") || "");
 
   const isAuthenticated = computed(() => !!token.value && !!userId.value);
@@ -108,11 +108,11 @@ export const useAuthStore = defineStore("auth", () => {
       });
 
       if (res?.status === 200) {
-        // ✅ Save email
+        //  Save email
         localStorage.setItem("email", email);
         savedEmail.value = email;
 
-        // ✅ Save token (response এ token আছে)
+        // Save token (response এ token আছে)
         const t = res?.data?.token || "";
         if (t) {
           localStorage.setItem("token", t);
@@ -123,7 +123,7 @@ export const useAuthStore = defineStore("auth", () => {
           return false;
         }
 
-        // ✅ Save user id (response এ user.id আছে)
+        //  Save user id (response এ user.id আছে)
         const uid = res?.data?.user?.id || "";
         if (uid) {
           localStorage.setItem("user_id", String(uid));

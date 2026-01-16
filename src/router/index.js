@@ -9,6 +9,7 @@ import DetailsPage from "../Pages/DetailsPage.vue";
 import ProfilePage from "../Pages/ProfilePage.vue";
 import OrdersPage from "../Pages/OrdersPage.vue";
 import CartPage from "../Pages/CartPage.vue"; 
+import WishlistPage from "../Pages/WishlistPage.vue";
 
 const routes = [
   { path: "/", name: "Home", component: HomePage },
@@ -24,8 +25,8 @@ const routes = [
   { path: "/profile", name: "Profile", component: ProfilePage },
   { path: "/orders", name: "Orders", component: OrdersPage },
 
-
   { path: "/cart", name: "Cart", component: CartPage },
+  { path: "/wish", name: "Wish", component: WishlistPage },
 ];
 
 const router = createRouter({

@@ -151,9 +151,7 @@ const cartItems = computed(() =>
 );
 
 /**
- * ✅ IMPORTANT:
  * Backend route: GET /DeleteCartList/{product_id}
- * তাই remove করার জন্য product_id লাগবেই।
  */
 const getPid = (row) => row?.product_id ?? row?.product?.id ?? null;
 
@@ -193,7 +191,7 @@ const onRemoveRow = async (row) => {
   try {
     removingPid.value = pid;
 
-    // ✅ store.removeFromCart expects product_id (because backend uses DeleteCartList/{product_id})
+   
     await store.removeFromCart(pid);
 
     // store.removeFromCart already calls fetchCart(), but safe to call again if you want:
@@ -240,7 +238,6 @@ onMounted(async () => {
   border-radius: 8px;
 }
 
-/* Qty/Total একটু left spacing */
 .cart-table th.text-start,
 .cart-table td.text-start {
   padding-left: 18px;

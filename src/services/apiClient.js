@@ -3,7 +3,7 @@ import axios from "axios";
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
   timeout: 15000,
-  withCredentials: false, // JWT হলে false, cookie auth হলে true
+  withCredentials: false, 
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
@@ -11,21 +11,18 @@ const apiClient = axios.create({
 });
 
 // ===============================
-// ✅ Request Interceptor
+// Request Interceptor
 // ===============================
 apiClient.interceptors.request.use(
   (config) => {
     config.headers = config.headers || {};
 
-    // ✅ 1) Bearer Token
     const token = localStorage.getItem("token");
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
 
-    // ✅ 2) User ID header (backend expects header('id'))
-    // fallback: user_id OR id OR uid
-    const userId =
+     const userId =
       localStorage.getItem("user_id") ||
       localStorage.getItem("id") ||
       localStorage.getItem("uid") ||
@@ -35,8 +32,6 @@ apiClient.interceptors.request.use(
       config.headers["id"] = String(userId);
     }
 
-    // ✅ 3) Email header (backend expects header('email'))
-    // fallback: email OR user_email
     const email =
       localStorage.getItem("email") ||
       localStorage.getItem("user_email") ||
@@ -52,7 +47,7 @@ apiClient.interceptors.request.use(
 );
 
 // ===============================
-// ✅ Response Interceptor
+// Response Interceptor
 // ===============================
 apiClient.interceptors.response.use(
   (response) => response,

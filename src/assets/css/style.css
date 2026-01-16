@@ -1487,6 +1487,12 @@ button:focus:not(:focus-visible) {
 .mega-menu-col:last-child {
 	border-right: 0 !important;
 }
+/* logo */
+.logo {
+  height: 40px;
+  width: auto;
+  display: block;
+}
 .dropdown-menu li a i {
     font-size: 14px;
     width: 20px;
@@ -3844,6 +3850,15 @@ footer {
 .footer_logo {
 	margin-bottom: 20px;
 }
+/* footerlogo */
+.footerlogo {
+  max-height: 40px;    
+  width: auto;        
+  max-width: 170px;    
+  object-fit: contain;
+  display: block;
+}
+
 footer p {
 	font-size: 14px;
 }

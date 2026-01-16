@@ -30,7 +30,7 @@ onMounted(async () => {
             >
               <ul class="contact_detail text-center text-lg-start">
                 <li><i class="ti-mobile"></i><span>123-456-7890</span></li>
-                <li><i class="ti-email"></i><span>info@apple.com</span></li>
+                <li><i class="ti-email"></i><span>info@samytech.com</span></li>
               </ul>
             </div>
           </div>
@@ -66,11 +66,10 @@ onMounted(async () => {
       <div class="container">
         <nav class="navbar navbar-expand-lg">
           <a class="navbar-brand" href="/">
-            <img
-              class="logo_dark"
-              src=""
-              alt="logo"
-            />
+              <img
+                class="logo"
+                src="../../assets/images/SAMYLOGO.png"
+                alt="SAMY Logo"/>
           </a>
           <button
             class="navbar-toggler"

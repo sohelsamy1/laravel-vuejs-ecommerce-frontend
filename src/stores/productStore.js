@@ -73,8 +73,8 @@ export const useProductStore = defineStore("productStore", () => {
   const showInvoiceModal = ref(false);
 
   // Invoice / Payment
-  const paymentMethods = ref([]); // optional fallback
-  const paymentUrl = ref(""); // ✅ SSLCommerz URL
+  const paymentMethods = ref([]);
+  const paymentUrl = ref(""); 
   const invoiceLoading = ref(false);
   const invoiceError = ref("");
 
@@ -306,7 +306,6 @@ export const useProductStore = defineStore("productStore", () => {
     }
   };
 
-  // ✅ IMPORTANT: তোমার backend route GET
   // Route::get('/DeleteCartList/{product_id}', ...)
   const removeFromCart = async (product_id) => {
     try {
@@ -412,11 +411,10 @@ export const useProductStore = defineStore("productStore", () => {
     try {
       const res = await apiClient.get("/InvoiceCreate");
 
-      // ✅ your backend returns: { msg:"success", data:{ paymentMethod:"URL", ... } }
       const url = res?.data?.data?.paymentMethod || "";
       if (url) {
         paymentUrl.value = url;
-        return res; // ✅ IMPORTANT
+        return res; 
       }
 
       // fallback (if someday backend returns array/list)
@@ -426,7 +424,7 @@ export const useProductStore = defineStore("productStore", () => {
         [];
       paymentMethods.value = Array.isArray(methods) ? methods : [];
 
-      return res; // ✅ IMPORTANT
+      return res; 
     } catch (err) {
       if (err?.response?.status === 401) {
         invoiceError.value = "Unauthorized. Please login again.";
@@ -442,6 +440,65 @@ export const useProductStore = defineStore("productStore", () => {
       invoiceLoading.value = false;
     }
   };
+
+  // Wish List state ====
+  const wishlist = ref([]);
+  const wishlistLoading = ref(false);
+  const wishlistError = ref("");
+
+  // Get Wishlist
+  const fetchWishlist = async () => {
+    wishlistLoading.value = true;
+    try {
+      const res = await apiClient.get("/ProductWishList");
+      wishlist.value = (res?.data?.data || [])
+        .map((r) => r.product)
+        .filter(Boolean);
+    } catch (err) {
+      cogoToast.error("Failed to load wishlist.");
+      router.push("/login");
+    } finally {
+      wishlistLoading.value = false;
+    }
+  };
+// GET /CreateWishList/{product_id}
+  const addToWishlist = async (product_id) => {
+    try {
+      const res = await apiClient.get(`/CreateWishList/${product_id}`);
+      cogoToast.success("Added to wishlist.");
+      // return res?.data;
+    } catch (err) {
+      if (
+        err?.response?.status === 401 ||
+        err?.response?.data?.status === "unauthorized"
+      ) {
+        router.push("/login");
+      } else {
+        console.error("Failed to add to wishlist:", err);
+        cogoToast.error("Failed to add to wishlist.");
+      }
+    }
+  };
+
+  // GET /RemoveWishList/{id}  (protected)
+  const removeFromWishlist = async (productId) => {
+    if (!productId) return;
+    const prev = [...wishlist.value];
+    wishlist.value = wishlist.value.filter((p) => p.id !== productId);
+    try {
+      const res = await apiClient.get(`/RemoveWishList/${productId}`);
+      if (res.status !== 200) {
+        throw new Error("Remove failed");
+      }
+      cogoToast.success("Removed from wishlist.");
+    } catch (err) {
+      console.error("Error removing wishlist item:", err);
+      wishlist.value = prev;
+      cogoToast.error("Failed to remove. Please try again.");
+    }
+  };
+
+
 
   // =========================
   // EXPORTS
@@ -535,5 +592,14 @@ export const useProductStore = defineStore("productStore", () => {
     invoiceLoading,
     invoiceError,
     createInvoice,
+
+    // Wishlist
+    wishlist,
+    wishlistLoading,
+    wishlistError,
+
+    fetchWishlist,
+    addToWishlist,
+    removeFromWishlist,
   };
 });

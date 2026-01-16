@@ -13,7 +13,8 @@ const currentYear = computed(() => new Date().getFullYear());
             <div class="widget">
               <div class="footer_logo">
                 <router-link to="/">
-                  <img src="../../assets/images/logo_light.png" alt="logo" />
+                  <img class="footerlogo" src="../../assets/images/SAMYLOGO.png" alt="Footer Logo">
+
                 </router-link>
               </div>
               <p>
@@ -106,15 +107,15 @@ const currentYear = computed(() => new Date().getFullYear());
               <ul class="contact_info contact_info_light">
                 <li>
                   <i class="ti-location-pin"></i>
-                  <p>123 Street, Old Trafford, New South London , UK</p>
+                  <p>Jatrbari, Dhaka, Bangladesh</p>
                 </li>
                 <li>
                   <i class="ti-email"></i>
-                  <a href="mailto:info@apple.com">info@apple.com</a>
+                  <a href="mailto:info@apple.com">info@samytech.com</a>
                 </li>
                 <li>
                   <i class="ti-mobile"></i>
-                  <p>+ 457 789 789 65</p>
+                  <p>+8801676724318</p>
                 </li>
               </ul>
             </div>

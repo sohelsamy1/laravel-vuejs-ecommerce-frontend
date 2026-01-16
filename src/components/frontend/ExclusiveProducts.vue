@@ -16,7 +16,6 @@ const tabs = computed(() => [
 
 const setActiveTab = async (tabName) => {
   activeTab.value = tabName;
-  // Lazy-load for this tab if empty
   const tab = tabs.value.find((t) => t.name === tabName);
   if (tab && tab.products.length === 0) {
     await productStore.loadProductsByTab(tabName);
@@ -72,8 +71,7 @@ onBeforeMount(async () => {
             </div>
             <p class="mt-3">Loading products...</p>
           </div>
-
-          <!-- Panes (one loop, no repetition) -->
+         
           <div
             v-for="tab in tabs"
             :key="tab.name + '-pane'"

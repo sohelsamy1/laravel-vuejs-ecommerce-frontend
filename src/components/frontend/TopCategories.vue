@@ -23,14 +23,12 @@ onBeforeMount(async () => {
           </p>
         </div>
       </div>
-      <!-- Loading -->
-      <div v-if="store.categoriesLoading" class="text-center py-4">
+        <div v-if="store.categoriesLoading" class="text-center py-4">
         <div class="spinner-border" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
       </div>
 
-      <!-- Error / Empty -->
       <div
         v-else-if="!store.categories.length"
         class="text-center text-muted py-4"
@@ -38,7 +36,6 @@ onBeforeMount(async () => {
         {{ store.categoriesError || "No categories available." }}
       </div>
 
-      <!-- Category Item -->
       <div v-else class="row align-items-center">
         <div
           v-for="category in store.categories"
@@ -59,7 +56,6 @@ onBeforeMount(async () => {
           </div>
         </div>
       </div>
-      <!-- Category Item -->
-    </div>
+      </div>
   </div>
 </template>
